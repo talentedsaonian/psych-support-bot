@@ -292,7 +292,7 @@ def save_conversation_result(
 
 
 def save_assessment(
-    session: Session, user_id: str, assessment: AssessmentScore, *, source: str = "chat"
+    session: Session, user_id: str, assessment: AssessmentScore, *, source: str = "chat", commit: bool = True
 ) -> AssessmentRecord:
     ensure_user(session, user_id)
     record = AssessmentRecord(
@@ -311,8 +311,11 @@ def save_assessment(
         record.needs_safety_followup = interp.needs_safety_followup
     session.add(record)
     record_usage_event(session, user_id, "assessment_submitted")
-    session.commit()
-    session.refresh(record)
+    if commit:
+        session.commit()
+        session.refresh(record)
+    else:
+        session.flush()
     return record
 
 

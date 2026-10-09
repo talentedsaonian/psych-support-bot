@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from psych_support_bot.api.routes.analytics import router as analytics_router
 from psych_support_bot.api.routes.assessments import router as assessments_router
 from psych_support_bot.api.routes.auth import router as auth_router
+from psych_support_bot.api.routes.chat_assisted_assessments import router as chat_assisted_assessments_router
 from psych_support_bot.api.routes.checkins import router as checkins_router
 from psych_support_bot.api.routes.conversation import router as conversation_router
 from psych_support_bot.api.routes.exercises import router as exercises_router
@@ -104,6 +105,7 @@ def create_app() -> FastAPI:
     data_router_guard = [Depends(require_auth)]
     for guarded in (
         conversation_router,
+        chat_assisted_assessments_router,
         assessments_router,
         checkins_router,
         plans_router,

@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from psych_support_bot.infra.db.models import (
     AssessmentRecord,
+    ChatAssessmentDraft,
     CheckinRecord,
     ConversationSession,
     ExerciseRecord,
@@ -125,6 +126,20 @@ def export_user_data(session: Session, user_id: str) -> dict:
             .filter(QuestionnaireSessionRecord.user_id == user_id)
             .all()
         ],
+        "chat_assessment_drafts": [
+            {
+                "draft_id": r.id,
+                "session_id": r.session_id,
+                "assessment_type": r.assessment_type,
+                "candidates": json.loads(r.candidates_json),
+                "asked": json.loads(r.asked_json),
+                "confirmed": json.loads(r.confirmed_json),
+                "status": r.status,
+                "assessment_id": r.assessment_id,
+                "created_at": _iso(r.created_at),
+            }
+            for r in session.query(ChatAssessmentDraft).filter(ChatAssessmentDraft.user_id == user_id).all()
+        ],
         "conversations": [
             {
                 "session_id": conv.id,
@@ -218,6 +233,9 @@ def me_summary(session: Session, user_id: str) -> dict:
 def clear_user_records(session: Session, user_id: str) -> dict[str, int]:
     """清空主动记录（测评/练习/打卡），保留聊天与账号。返回逐表删除行数。"""
     counts = {
+        "chat_assessment_drafts": session.query(ChatAssessmentDraft)
+        .filter(ChatAssessmentDraft.user_id == user_id)
+        .delete(synchronize_session=False),
         "assessments": session.query(AssessmentRecord)
         .filter(AssessmentRecord.user_id == user_id)
         .delete(synchronize_session=False),
@@ -254,6 +272,11 @@ def delete_user_account(session: Session, user_id: str) -> dict[str, int]:
     counts["questionnaire_sessions"] = int(
         session.query(QuestionnaireSessionRecord)
         .filter(QuestionnaireSessionRecord.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+    counts["chat_assessment_drafts"] = int(
+        session.query(ChatAssessmentDraft)
+        .filter(ChatAssessmentDraft.user_id == user_id)
         .delete(synchronize_session=False)
     )
     counts["assessments"] = int(

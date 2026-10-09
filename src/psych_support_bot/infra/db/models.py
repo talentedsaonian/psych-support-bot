@@ -102,6 +102,24 @@ class QuestionnaireSessionRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
 
+class ChatAssessmentDraft(Base):
+    """用户主动发起的聊天辅助量表草稿；候选不等于正式答案。"""
+
+    __tablename__ = "chat_assessment_drafts"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    session_id: Mapped[str] = mapped_column(String(64), index=True)
+    assessment_type: Mapped[str] = mapped_column(String(32))
+    candidates_json: Mapped[str] = mapped_column(Text, default="{}")
+    asked_json: Mapped[str] = mapped_column(Text, default="{}")
+    confirmed_json: Mapped[str] = mapped_column(Text, default="{}")
+    status: Mapped[str] = mapped_column(String(32), default="draft")
+    assessment_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
 class CheckinRecord(Base):
     __tablename__ = "checkins"
 
